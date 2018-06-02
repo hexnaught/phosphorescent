@@ -50,9 +50,6 @@ func main() {
 	}
 	fmt.Println("+ Config Loaded!")
 
-	// parseAVData(config.AVAPIKey)
-	// return
-
 	// -- Set Up Bot -----------------------------------------------------------
 	fmt.Println("+ Bot Username: ", config.BotInfo.Username)
 	disgo, err := discordgo.New("Bot " + config.BotInfo.Token)
@@ -111,6 +108,11 @@ func commandDispatcher(session *discordgo.Session, message *discordgo.MessageCre
 	// Commands/stocks
 	if strings.HasPrefix(msg.Content, "stocks") {
 		stocks := strings.Fields(strings.TrimPrefix(msg.Content, "stocks"))
-		session.ChannelMessageSendEmbed(message.ChannelID, phoscom.StockEmb(stocks, config.AVAPIKey))
+		session.ChannelMessageSendEmbed(message.ChannelID, phoscom.GetStock(stocks, config.AVAPIKey))
+	}
+
+	if strings.HasPrefix(msg.Content, "trucker") {
+		truckerName := strings.Fields(strings.TrimPrefix(msg.Content, "trucker"))
+		session.ChannelMessageSendEmbed(message.ChannelID, phoscom.TruckerInfo(truckerName[0]))
 	}
 }

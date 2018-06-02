@@ -58,8 +58,8 @@ func fetchAVData(xFields []string, avAPIKey string) avResp {
 	return avData
 }
 
-// StockEmb ...
-func StockEmb(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
+// GetStock ...
+func GetStock(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 	var xFields []*discordgo.MessageEmbedField
 	var validSymbols []string
 	var xData avResp
@@ -98,7 +98,7 @@ func StockEmb(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 		xData = fetchAVData([]string{"goog", "aapl", "msft", "nvda"}, avAPIKey)
 	}
 
-	fmt.Println(validSymbols)
+	// fmt.Println(validSymbols)
 
 	if len(xFields) == 0 {
 		return &discordgo.MessageEmbed{
