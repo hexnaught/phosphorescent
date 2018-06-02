@@ -112,6 +112,11 @@ func userSearchCallout(username string) wotUserSearchResp {
 func userDetailCallout(userSearchRes wotUserSearchResp) wotUserDetailsResp {
 	var userDetailResults wotUserDetailsResp
 
+	if userSearchRes.Error != "" {
+		userDetailResults.Error = "ERROR"
+		return userDetailResults
+	}
+
 	// Create Request
 	req, err := http.NewRequest("GET", "https://wotapi.thor.re/api/wot/player/"+strconv.Itoa(userSearchRes.Records[0].ID), nil)
 	if err != nil {
