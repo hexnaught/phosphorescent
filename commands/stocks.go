@@ -1,15 +1,13 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jokerdan/phosphorescent/util"
 )
 
 type avResp struct {
@@ -24,37 +22,17 @@ type avResp struct {
 		Volume    string `json:"3. volume"`
 		Timestamp string `json:"4. timestamp"`
 	} `json:"Stock Quotes"`
+	Error string
 }
 
 func fetchAVData(xFields []string, avAPIKey string) avResp {
 	var avData avResp
+
 	url := fmt.Sprintf("https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols=%s&apikey=%s", strings.Join(xFields, ","), avAPIKey)
-
-	// Create Request
-	req, err := http.NewRequest("GET", url, nil)
+	err := util.DoCallout(url, &avData)
 	if err != nil {
-		log.Fatal("NewRequest: ", err)
-		return avData
+		avData.Error = "There was an issue with the callout"
 	}
-
-	// Create Client
-	client := http.Client{}
-
-	// Run request and get response
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Do: ", err)
-		return avData
-	}
-
-	// Close when done
-	defer resp.Body.Close()
-
-	// Sort out the response
-	if err := json.NewDecoder(resp.Body).Decode(&avData); err != nil {
-		log.Println(err)
-	}
-
 	return avData
 }
 
@@ -80,6 +58,13 @@ func GetStock(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 		xData = fetchAVData([]string{"goog", "aapl", "msft", "nvda"}, avAPIKey)
 	}
 
+	if xData.Error != "" {
+		return &discordgo.MessageEmbed{
+			Color: 0xF6FF93, // Yellow
+			Title: xData.Error,
+		}
+	}
+
 	var xPrice float64
 	var xTime time.Time
 	for i := 0; i < len(xData.MainData); i++ {
@@ -96,6 +81,12 @@ func GetStock(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 
 	if len(validSymbols) <= 0 {
 		xData = fetchAVData([]string{"goog", "aapl", "msft", "nvda"}, avAPIKey)
+		if xData.Error != "" {
+			return &discordgo.MessageEmbed{
+				Color: 0xF6FF93, // Yellow
+				Title: xData.Error,
+			}
+		}
 	}
 
 	// fmt.Println(validSymbols)

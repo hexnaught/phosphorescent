@@ -1,12 +1,10 @@
 package commands
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jokerdan/phosphorescent/util"
 )
 
 type wotUserDetailsResp struct {
@@ -81,31 +79,10 @@ func TruckerInfo(username string) *discordgo.MessageEmbed {
 func userSearchCallout(username string) wotUserSearchResp {
 	var userSearchResults wotUserSearchResp
 
-	// Create Request
-	req, err := http.NewRequest("GET", "https://www.worldoftrucks.com/en/ajax/search.php?type=users&text="+username, nil)
+	err := util.DoCallout("https://www.worldoftrucks.com/en/ajax/search.php?type=users&text="+username, &userSearchResults)
 	if err != nil {
-		log.Fatal("NewRequest: ", err)
-		return userSearchResults
+		userSearchResults.Error = "Error: There was an issue with the Callout"
 	}
-
-	// Create Client
-	client := http.Client{}
-
-	// Run request and get response
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Do: ", err)
-		return userSearchResults
-	}
-
-	// Close when done
-	defer resp.Body.Close()
-
-	// Sort out the response
-	if err := json.NewDecoder(resp.Body).Decode(&userSearchResults); err != nil {
-		log.Println(err)
-	}
-
 	return userSearchResults
 }
 
@@ -113,34 +90,14 @@ func userDetailCallout(userSearchRes wotUserSearchResp) wotUserDetailsResp {
 	var userDetailResults wotUserDetailsResp
 
 	if userSearchRes.Error != "" {
-		userDetailResults.Error = "ERROR"
+		userDetailResults.Error = "Error: There was an issue with finding the user."
 		return userDetailResults
 	}
 
 	// Create Request
-	req, err := http.NewRequest("GET", "https://wotapi.thor.re/api/wot/player/"+strconv.Itoa(userSearchRes.Records[0].ID), nil)
+	err := util.DoCallout("https://wotapi.thor.re/api/wot/player/"+strconv.Itoa(userSearchRes.Records[0].ID), &userDetailResults)
 	if err != nil {
-		log.Fatal("NewRequest: ", err)
-		return userDetailResults
+		userDetailResults.Error = "Error: There was an issue with the Callout."
 	}
-
-	// Create Client
-	client := http.Client{}
-
-	// Run request and get response
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Do: ", err)
-		return userDetailResults
-	}
-
-	// Close when done
-	defer resp.Body.Close()
-
-	// Sort out the response
-	if err := json.NewDecoder(resp.Body).Decode(&userDetailResults); err != nil {
-		log.Println(err)
-	}
-
 	return userDetailResults
 }

@@ -8,9 +8,8 @@ import (
 	"strings"
 	"syscall"
 
-	phoscom "github.com/jokerdan/phosphorescent/commands"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/jokerdan/phosphorescent/commands"
 )
 
 // == Config =================================================================
@@ -108,11 +107,11 @@ func commandDispatcher(session *discordgo.Session, message *discordgo.MessageCre
 	// Commands/stocks
 	if strings.HasPrefix(msg.Content, "stocks") {
 		stocks := strings.Fields(strings.TrimPrefix(msg.Content, "stocks"))
-		session.ChannelMessageSendEmbed(message.ChannelID, phoscom.GetStock(stocks, config.AVAPIKey))
+		session.ChannelMessageSendEmbed(message.ChannelID, commands.GetStock(stocks, config.AVAPIKey))
 	}
 
 	if strings.HasPrefix(msg.Content, "trucker") {
 		truckerName := strings.Fields(strings.TrimPrefix(msg.Content, "trucker"))
-		session.ChannelMessageSendEmbed(message.ChannelID, phoscom.TruckerInfo(truckerName[0]))
+		session.ChannelMessageSendEmbed(message.ChannelID, commands.TruckerInfo(truckerName[0]))
 	}
 }
