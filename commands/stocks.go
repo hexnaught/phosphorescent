@@ -67,16 +67,17 @@ func GetStock(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 
 	var xPrice float64
 	var xTime time.Time
-	for i := 0; i < len(xData.MainData); i++ {
-		xTime, _ = time.Parse("2006-01-02 15:04:05", xData.MainData[i].Timestamp)
-		xPrice, _ = strconv.ParseFloat(xData.MainData[i].Price, 64)
+
+	for _, data := range xData.MainData {
+		xTime, _ = time.Parse("2006-01-02 15:04:05", data.Timestamp)
+		xPrice, _ = strconv.ParseFloat(data.Price, 64)
 		xFields = append(xFields, &discordgo.MessageEmbedField{
-			Name:   fmt.Sprintf("`%s - %s`", xData.MainData[i].Symbol, xTime.Format("15:04:05")),
-			Value:  fmt.Sprintf("Price: %.2f\nVolume: %s", xPrice, xData.MainData[i].Volume),
+			Name:   fmt.Sprintf("`%s - %s`", data.Symbol, xTime.Format("15:04:05")),
+			Value:  fmt.Sprintf("Price: %.2f\nVolume: %s", xPrice, data.Volume),
 			Inline: true,
 		})
 		// Only add/show symbols that are valid/found in the API call
-		validSymbols = append(validSymbols, xData.MainData[i].Symbol)
+		validSymbols = append(validSymbols, data.Symbol)
 	}
 
 	if len(validSymbols) <= 0 {
@@ -88,8 +89,6 @@ func GetStock(symbols []string, avAPIKey string) *discordgo.MessageEmbed {
 			}
 		}
 	}
-
-	// fmt.Println(validSymbols)
 
 	if len(xFields) == 0 {
 		return &discordgo.MessageEmbed{
